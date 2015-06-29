@@ -1,0 +1,6 @@
+name = uc_course
+description = course for product
+core = 7.x 
+package = other
+
+configure = admin/config/course

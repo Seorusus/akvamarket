@@ -1,0 +1,139 @@
+# $Id$
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  uc_masseditor.module: n/a
+#  uc_masseditor.info: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2013-01-14 14:28+0300\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: uc_masseditor.module:20
+msgid "Administer uc_masseditor"
+msgstr ""
+
+#: uc_masseditor.module:23
+msgid "Product editor"
+msgstr ""
+
+#: uc_masseditor.module:29
+msgid "Edit"
+msgstr ""
+
+#: uc_masseditor.module:35;80
+msgid "Settings"
+msgstr ""
+
+#: uc_masseditor.module:99
+msgid "Items per page"
+msgstr ""
+
+#: uc_masseditor.module:106
+msgid "Taxonomy"
+msgstr ""
+
+#: uc_masseditor.module:111;181
+msgid "Save"
+msgstr ""
+
+#: uc_masseditor.module:120;208
+msgid "Saved"
+msgstr ""
+
+#: uc_masseditor.module:125
+msgid "All products"
+msgstr ""
+
+#: uc_masseditor.module:134
+msgid "Dictionary is not selected."
+msgstr ""
+
+#: uc_masseditor.module:142
+msgid "Filter by category"
+msgstr ""
+
+#: uc_masseditor.module:147
+msgid "Selected"
+msgstr ""
+
+#: uc_masseditor.module:154
+msgid "Filter"
+msgstr ""
+
+#: uc_masseditor.module:161
+msgid "Values"
+msgstr ""
+
+#: uc_masseditor.module:193
+msgid "Fields is empty."
+msgstr ""
+
+#: uc_masseditor.module:193
+msgid "Invalid characters."
+msgstr ""
+
+#: uc_masseditor.info:0
+msgid "Mass Product Editor"
+msgstr ""
+
+#: uc_masseditor.info:0
+msgid "Mass product editor for Ubercart."
+msgstr ""
+
+#: uc_masseditor.info:0
+msgid "Ubercart - extra"
+msgstr ""
+
+msgid "title"
+msgstr "Название"
+
+msgid "model"
+msgstr "Артикул"
+
+msgid "list_price"
+msgstr "Цена по прейскуранту"
+
+msgid "cost"
+msgstr "Стоимость"
+
+msgid "sell_price"
+msgstr "Цена продажи"
+
+msgid "weight"
+msgstr "Вес"
+
+msgid "weight_units"
+msgstr "Вес (единица измерения)"
+
+msgid "length"
+msgstr "Длина"
+
+msgid "width"
+msgstr "Ширина"
+
+msgid "height"
+msgstr "Высота"
+
+msgid "length_units"
+msgstr "Длина (единица измерения)"
+
+msgid "pkg_qty"
+msgstr "Количество"
+
+msgid "default_qty"
+msgstr "Количество по умолчанию"
+
+msgid "stock"
+msgstr "Склад"
+

@@ -1,0 +1,3 @@
+name = Session recent nodes
+description = Shows recent viewed nodes with session backend.
+core = 7.x

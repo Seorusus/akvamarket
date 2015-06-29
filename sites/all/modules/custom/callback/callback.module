@@ -1,0 +1,78 @@
+<?php
+
+function callback_init() {
+  drupal_add_js(drupal_get_path('module', 'callback') .'/js/callback.js');
+  drupal_add_js(drupal_get_path('module', 'callback') .'/js/jquery.maskedinput.min.js');
+}
+
+//Отображаем блок на странице настройки блоков
+function callback_block_info() {
+  $blocks['callback'] = array(
+    'info' => t('Обратный звонок'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+  return $blocks;
+}
+
+//Строим форму
+function callback_form($form_state,&$form_submit){
+  $form['name']=array(
+    '#title'=>t('Имя'),
+    '#type'=>'textfield',
+    '#required'=>TRUE,
+    '#maxlength'=> 50,
+    '#size'=>30,
+  );
+  
+  $form['phone']=array(
+    '#title'=>t('Телефон'),
+    '#type'=>'textfield',
+    '#required'=>TRUE,
+    '#maxlength'=> 50,
+    '#size'=>30,
+  );
+  
+  $form['submit']=array(
+    '#type'=>'submit',
+    '#value'=>t('Отправить'),
+  );
+  
+  return $form;
+}
+
+//Выводим блок
+function callback_block_view($delta = '') {
+  $block = array();
+      $block['content'] = drupal_get_form('callback_form');
+  return $block;
+}
+
+//Проверка формы
+function callback_form_validate($form, &$form_state){
+  //debug($form_state['values']);
+  if(mb_strlen($form_state['values']['name'])<3){
+    form_set_error('name', t('Слишком короткое имя.'));
+  }
+}
+
+//Отправка мейла
+function callback_form_submit($form, &$form_state){
+    //Получаем даные преданные из формы и пишем в переменные для удосбства
+    $name   = $form_state['values']['name'];
+    $phone  = $form_state['values']['phone'];
+
+    //Формируем тело письма
+    $str  = "Имя ".$name."\r\n";
+    $str .= "Телефон ".$phone."\r\n";
+    
+    //Отправляем через функцию друпала
+    // На мейл администратора сайта variable_get('site_mail')
+    drupal_mail('system', 'mail', variable_get('site_mail'), language_default(), array(
+      'context' => array(
+        'subject' => 'Заполнена форма обратного звонка',
+        'message' => $str,
+      )
+    ));
+    //И сообщение пользователю, о то что отправка данных состоялась
+    drupal_set_message('Сообщение отправлено');
+}

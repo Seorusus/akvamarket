@@ -1,0 +1,20 @@
+<?php
+
+// Uninstall callback, default variables.
+function session_recent_nodes_install() {
+  variable_set('session_recent_nodes_types', array());
+  variable_set('session_recent_nodes_limit', 10);
+  variable_set('session_recent_nodes_render', 'title');
+
+  $_SESSION['session_recent_nodes'] = array();
+}
+
+
+// Uninstall callback, clear variables.
+function session_recent_nodes_uninstall() {
+  variable_del('session_recent_nodes_types');
+  variable_del('session_recent_nodes_limit');
+  variable_del('session_recent_nodes_render');
+
+  unset($_SESSION['session_recent_nodes']);
+}

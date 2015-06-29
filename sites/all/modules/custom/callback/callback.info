@@ -1,0 +1,7 @@
+name=Callback
+
+description=Формы обратной связи.
+
+package=User feedback
+
+core=7.x

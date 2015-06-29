@@ -1,0 +1,211 @@
+<?php
+function _uc_masseditor_default_settings() {
+  return array(
+    'title' => TRUE,
+    'model' => TRUE,
+    'list_price' => FALSE,
+    'cost' => FALSE,
+    'sell_price' => TRUE,
+    'stock' => TRUE,
+    'weight' => FALSE,
+    'weight_units' => FALSE,
+    'length' => FALSE,
+    'width' => FALSE,
+    'height' => FALSE,
+    'length_units' => FALSE,
+    'pkg_qty' => FALSE,
+    'default_qty' => FALSE,
+  );
+}
+function uc_masseditor_permission() { return array('administer uc_masseditor' => array('title' => t('Administer uc_masseditor'))); }
+function uc_masseditor_menu() {
+  $items['admin/store/masseditor'] = array(
+    'title' => t('Product editor'),
+    'access arguments' => array('administer uc_masseditor'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('uc_masseditor_editor_form'),
+  );
+ $items['admin/store/masseditor/edit'] = array(
+    'title' => t('Edit'),
+    'access arguments' => array('administer uc_masseditor'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('uc_masseditor_editor_form'),
+  );
+  $items['admin/store/masseditor/settings'] = array(
+    'title' => t('Settings'),
+    'access arguments' => array('administer uc_masseditor'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('uc_masseditor_settings_form'),
+  );
+
+  return $items;
+}
+
+function uc_masseditor_theme($existing, $type, $theme, $path) {
+  return array(
+    'uc_masseditor' => array(
+      'render element' => 'element'
+    ),
+  );
+}
+
+function theme_uc_masseditor($form)
+{
+     $header = array();
+     $rows = array();
+     $output = '';
+     foreach($form['element'] as $name => $field){
+         if(preg_match("/^([0-9])+?\^+?([A-z])/",$name))
+         {
+                $f = explode("^",$name);
+                $header[$f[1]] = t($f[1]);
+                unset($field['#title']);
+                $rows[$f[0]][$name] = drupal_render($field); 
+         } 
+   }
+   $output .= theme('table', array('header' => $header, 'rows'=> $rows));
+   $output .= drupal_render($form['element']['submit']);
+   $output .= theme('pager');
+   return $output;
+}
+
+function uc_masseditor_settings_form($form, &$form_state)
+{
+   $dictionary = array();
+   $vocabulary = db_query("SELECT vid,name FROM {taxonomy_vocabulary}");
+   foreach($vocabulary as $val) $dictionary[$val->vid] = $val->name;
+
+   $form['group'] = array(
+   '#type' => 'fieldset',
+   '#title' => t('Settings'),
+   '#collapsible' => FALSE,
+   '#collapsed' => FALSE,);
+
+   $def_settings = _uc_masseditor_default_settings();
+   $settings = variable_get('uc_masseditor_settings', $def_settings);
+
+   foreach ($settings as $setting_name => $setting_status) 
+   {
+    $form['group']['cb'][$setting_name] = array(
+      '#type' => 'checkbox',
+      '#title' => t($setting_name),
+      '#default_value' => $setting_status,
+    );
+   }
+
+    $masseditor_options = variable_get('uc_masseditor_options', array('per_page' => 50,));
+    $form['group']['opt']['per_page'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Items per page'),
+    '#default_value' => $masseditor_options['per_page'],
+    '#size' => 7,
+    '#maxlength' => 2,); 
+    
+    $form['group']['taxonomy'] = array(
+       '#type' => 'select',
+       '#title' => t('Taxonomy'),
+       '#options' => $dictionary,
+    );
+    $form['group']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),);
+    return $form;
+}
+function uc_masseditor_settings_form_submit($form, &$form_state) 
+{
+    $masseditor_options['per_page'] = $form_state['values']['per_page'];
+    $masseditor_options['taxonomy'] = $form_state['values']['taxonomy'];
+    variable_set('uc_masseditor_settings', array_slice($form_state['values'],0,count( _uc_masseditor_default_settings()) ));
+    variable_set('uc_masseditor_options', $masseditor_options);
+    drupal_set_message(t('Saved'));
+}
+function uc_masseditor_editor_form($form, &$form_state)
+{ 
+
+    $terms['all'] = t('All products'); 
+    $settings = variable_get('uc_masseditor_settings',_uc_masseditor_default_settings());
+    $rows = array_slice($settings ,0,count( _uc_masseditor_default_settings()));
+    foreach($rows as $key => $row) if($row == 0) unset($rows[$key]); else{
+         $rows[$key] = $key;
+        if($key == 'stock' OR $key == 'sku') $rows['c'][$key] = $key; else if($key == 'title') $rows['n'][$key] = $key; else  $rows['p'][$key] = $key;
+    }
+    $options = variable_get('uc_masseditor_options');
+    $sql = (isset($options['taxonomy'])) ? " WHERE vid = ".$options['taxonomy'] : "";
+    if(isset($options['taxonomy'])) $sql = " WHERE vid = ".$options['taxonomy']; else drupal_set_message(t("Dictionary is not selected."),'error');
+    $query = db_query("SELECT tid,name FROM {taxonomy_term_data} ".$sql);
+    
+    foreach($query as $node) $terms[$node->tid] = $node->name; 
+    $filter = variable_get('uc_masseditor_term','all');
+
+    $form['filter'] = array(
+      '#type' => 'fieldset', 
+      '#title' => t('Filter by category'),
+      '#required' => TRUE );
+
+    $form['filter']['term'] = array(
+       '#type' => 'select',
+       '#title' => t('Selected'),
+       '#options' => $terms,
+       '#default_value' => $filter,
+   );
+
+    $form['filter']['filter'] = array(
+      '#type' => 'button', 
+      '#value' => t('Filter'), 
+      '#validate' => array('uc_masseditor_editor_form_filter'),
+    );
+    
+    $form['values'] = array(
+      '#type' => 'fieldset',
+      '#theme' => 'uc_masseditor', 
+      '#title' => t('Values'));
+ 
+  
+    $query = db_select('uc_products', 'p');
+    $query->innerJoin('taxonomy_index','t',' p.nid = t.nid');
+    //$query->innerJoin('uc_product_stock','c','c.nid = t.nid');
+    $query->innerJoin('node','n','n.nid = t.nid');
+    $rows['p']['nid'] = 'nid';
+    $query->fields('n',$rows['n'])->fields('p',$rows['p'])/*->fields('c',$rows['c'])*/;
+    if($filter != 'all') $query->condition('t.tid', $filter);
+    $nodes = $query->extend('PagerDefault')->limit($options['per_page'])->execute();
+    if($nodes){
+    foreach($nodes as $node){
+       $node = (array)$node;
+       $nid = $node['nid'];
+       unset($node['nid']);
+       foreach( $node as $name => $val)
+       $form['values'][$nid."^".$name] = array( '#title' => $name, '#type' => 'textfield','#size' => 10, '#default_value' => $val);
+    }}
+    $form['values']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    );
+    return $form;
+}
+function uc_masseditor_editor_form_validate($form, &$form_state)
+{
+      $types = array('weight_units','length_units','title');
+      $form_state['values'] = array_slice($form_state['values'], 2);
+      $form_state['values'] = array_reverse($form_state['values']);
+      $form_state['values'] = array_slice($form_state['values'], 5);
+      foreach($form_state['values'] as $key => $val){
+          $val = strip_tags($val);
+          if($val == '' or $val == '.') form_set_error($key, t('Fields is empty.')); else if(!preg_match('(weight_units|length_units|title)',$key) && !preg_match('/([0-9.])$/',$val)) form_set_error($key,t('Invalid characters.'));
+      }
+}
+function uc_masseditor_editor_form_filter($form, &$form_state){  variable_set('uc_masseditor_term',$form_state['values']['term']); }
+function uc_masseditor_editor_form_submit($form, &$form_state)
+{
+    foreach($form_state['values'] as $key => $val)
+    {
+       $value = addslashes($val);
+       $b = explode("^",$key);
+       $fields = array('stock','sku');
+       if(in_array($b[1],$fields)) $table = '{uc_product_stock}'; else $table = '{uc_products}';
+       if($b[1] == 'title'){ $table = '{node}'; db_query("UPDATE {node_revision} SET {$b[1]} = '$value' WHERE nid = {$b[0]}");}
+       db_query("UPDATE $table SET {$b[1]} = '$value' WHERE nid = {$b[0]}");
+    }
+    drupal_set_message(t('Saved'));
+}
+

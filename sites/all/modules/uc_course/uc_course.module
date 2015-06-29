@@ -1,0 +1,66 @@
+<?php
+/**
+ * Implements hook_menu(). Добавляем ссылку модуля в меню "конфигурация"
+ */
+function uc_course_menu() {
+  $items = array();
+
+  $items['admin/config/course'] = array(
+    'title' => 'Current course',
+    'description' => 'Configuration for Current course module',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('course_form'),
+	'access arguments' => array('access course content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+ * Page callback: Current posts settings. Создаем форму для ввода значения
+ */
+function uc_course_form($form, &$form_state) {
+  $form['course'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Course USD'),
+    '#default_value' => variable_get('course', 1),
+    '#size' => 20,
+    '#maxlength' => 100,
+    '#description' => t('Current course USD to BLR'),
+    '#required' => TRUE,
+  );
+
+  return system_settings_form($form);
+}
+
+/**
+ * Implements validation from the Form API. Проверка валидности ввода значения
+ */
+function uc_course_form_validate($form, &$form_state){
+  $course = $form_state['values']['course'];
+  if (!is_numeric($course)){
+    form_set_error('course', t('You must enter a number.'));
+  }
+  elseif ($course <= 0){
+    form_set_error('course', t('Course number must be positive.'));
+  }
+}
+
+/**
+ * Implements hook_permission(). Доступ к модулю.(можно не реализовывать)
+ */
+function uc_course_permission() {
+  return array(
+    'access course content' => array(
+      'title' => t('Access content for the Current course module'),
+    )
+  );
+}
+
+/**
+ * Implements hook_uc_product_alter(). И вот самый главный хук от уберкарта, который будет домнажать нашу цену на значение курса, при выводе
+ */
+function uc_course_uc_product_alter(&$node) {
+  $node->price *= variable_get('course');
+}

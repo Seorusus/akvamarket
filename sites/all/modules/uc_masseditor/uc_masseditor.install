@@ -1,0 +1,6 @@
+<?php
+function uc_masseditor_uninstall() {
+  variable_del('uc_masseditor_settings');
+  variable_del('uc_masseditor_options');
+  variable_del('uc_masseditor_term');
+}
